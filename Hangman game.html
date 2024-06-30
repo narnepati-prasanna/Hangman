@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hangman Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #hangman-canvas {
+            margin-bottom: 20px;
+        }
+
+        #word-display {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        #hint {
+            font-style: italic;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        #message {
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hangman Game</h1>
+        <canvas id="hangman-canvas" width="400" height="400"></canvas>
+        <div id="word-display"></div>
+        <div id="hint"></div>
+        <div id="message"></div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Words and hints
+            var words = [
+                { word: "apple", hint: "A common fruit" },
+                { word: "banana", hint: "Yellow fruit with a peel" },
+                { word: "orange", hint: "A citrus fruit" }
+                // Add more words and hints as needed
+            ];
+
+            // Select random word and hint
+            var randomIndex = Math.floor(Math.random() * words.length);
+            var selectedWord = words[randomIndex].word;
+            var selectedHint = words[randomIndex].hint;
+
+            // Display hint
+            document.getElementById("hint").innerText = "Hint: " + selectedHint;
+
+            // Display underscores for each letter in the word
+            var wordDisplay = '';
+            for (var i = 0; i < selectedWord.length; i++) {
+                wordDisplay += '_ ';
+            }
+            document.getElementById("word-display").innerText = wordDisplay;
+
+            // Variable to track incorrect guesses
+            var wrongGuesses = 0;
+            var gameEnded = false;
+
+            // Listen for key press events
+            document.addEventListener("keypress", function(event) {
+                if (gameEnded) return; // Do not process input if game has ended
+
+                var keyPressed = String.fromCharCode(event.keyCode).toLowerCase();
+
+                // Validate user input (allow only single letter guesses)
+                if (!/^[a-z]$/.test(keyPressed)) return;
+
+                // Check if the guessed letter is in the word
+                var updatedWordDisplay = '';
+                var guessedCorrectly = false;
+                for (var i = 0; i < selectedWord.length; i++) {
+                    if (selectedWord[i] === keyPressed) {
+                        updatedWordDisplay += keyPressed + ' ';
+                        guessedCorrectly = true;
+                    } else if (wordDisplay[2 * i] !== '_') {
+                        updatedWordDisplay += wordDisplay[2 * i] + ' ';
+                    } else {
+                        updatedWordDisplay += '_ ';
+                    }
+                }
+                document.getElementById("word-display").innerText = updatedWordDisplay;
+
+                // Check if the word has been completely guessed
+                if (!updatedWordDisplay.includes('_')) {
+                    document.getElementById("message").innerText = "Well done! You won!";
+                    gameEnded = true;
+                }
+
+                // Draw hangman if the guess was incorrect and the game is not over
+                if (!guessedCorrectly && !gameEnded) {
+                    updateHangman(++wrongGuesses);
+
+                    // Check for game over
+                    if (wrongGuesses === 6) {
+                        document.getElementById("message").innerText = "Game over! You lose! The word was: " + selectedWord;
+                        gameEnded = true;
+                    }
+                }
+            });
+
+            // Function to update hangman graphics
+            function updateHangman(wrongGuesses) {
+                var canvas = document.getElementById("hangman-canvas");
+                var context = canvas.getContext("2d");
+
+                switch (wrongGuesses) {
+                    case 1:
+                        // Draw head
+                        context.beginPath();
+                        context.arc(200, 100, 40, 0, Math.PI * 2);
+                        context.stroke();
+                        break;
+                    case 2:
+                        // Draw body
+                        context.moveTo(200, 140);
+                        context.lineTo(200, 300);
+                        context.stroke();
+                        break;
+                    case 3:
+                        // Draw left arm
+                        context.moveTo(200, 180);
+                        context.lineTo(100, 220);
+                        context.stroke();
+                        break;
+                    case 4:
+                        // Draw right arm
+                        context.moveTo(200, 180);
+                        context.lineTo(300, 220);
+                        context.stroke();
+                        break;
+                    case 5:
+                        // Draw left leg
+                        context.moveTo(200, 300);
+                        context.lineTo(150, 380);
+                        context.stroke();
+                        break;
+                    case 6:
+                        // Draw right leg
+                        context.moveTo(200, 300);
+                        context.lineTo(250, 380);
+                        context.stroke();
+                        break;
+                    default:
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
